@@ -1,0 +1,7 @@
+spring:
+  profiles:
+    active: dev
+    group:
+      dev: [common]
+      prod: [common]
+      test: [common]

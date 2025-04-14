@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h1>WebSocket Chat Test</h1>
+<textarea id="log" cols="100" rows="10" readonly></textarea><br/>
+<input id="msg" type="text" placeholder="메시지를 입력하세요">
+<button onclick="sendMessage()">보내기</button>
+
+<script>
+    const log = document.getElementById("log");
+
+    // ✅ 테스트용 JWT 토큰
+    const token = "test-jwt-token";
+
+    // ✅ 실사용 채팅방 UUID
+    const roomId = "1f017e2b-ecb6-6e7b-b885-d7a80785ef4d";
+
+    // ✅ WebSocket 연결 with 토큰
+    const socket = new SockJS("http://localhost:8080/ws?token=" + token);
+    const stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, () => {
+        log.value += "✅ Connected!\n";
+
+        // ✅ 채팅방 구독
+        stompClient.subscribe("/topic/chat/" + roomId, message => {
+            const msg = JSON.parse(message.body);
+            log.value += `📥 ${msg.username}: ${msg.content}\n`;
+        });
+    });
+
+    // ✅ 메시지 전송 함수
+    function sendMessage() {
+        const input = document.getElementById("msg");
+        const content = input.value;
+        if (!content) return;
+
+        stompClient.send("/chat/send", {}, JSON.stringify({
+            roomId: roomId,
+            content: content
+        }));
+
+        input.value = '';
+    }
+</script>
+</body>
+</html>
