@@ -7,7 +7,9 @@ plugins {
 group = 'com.chatting'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
-
+bootJar {
+    archiveFileName.set("chat-v1.jar")  // 최종 JAR 파일 이름을 'gyuhee.jar'로 설정
+}
 repositories {
     mavenCentral()
 }
