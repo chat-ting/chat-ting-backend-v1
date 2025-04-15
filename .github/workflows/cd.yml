@@ -2,7 +2,7 @@ name: CD - Deploy to EKS
 
 on:
   workflow_run:
-    workflows: ["Build and Push Docker image"]
+    workflows: ["Build and Push Docker image"]  # ✅ CI 이름과 일치해야 함
     types:
       - completed
 
@@ -12,42 +12,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Helm chart 배포를 위해 코드 가져오기
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # 2️⃣ kubectl 설치
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: latest
 
+      # 3️⃣ Helm 설치
       - name: Set up Helm
         uses: azure/setup-helm@v3
         with:
           version: latest
 
+      # 4️⃣ AWS 인증 (GitHub Secret 필요)
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
+          aws-region: ap-northeast-2  # 서울 리전
 
+      # 5️⃣ kubeconfig 설정 (클러스터 이름 수정 필요!)
       - name: Update kubeconfig for EKS
-        run: aws eks update-kubeconfig --region ap-northeast-2 --name chat-ting-cluster
+        run: aws eks update-kubeconfig --region ap-northeast-2 --name chat-ting-cluster  # ✅ 클러스터 이름 정확히 넣기
 
-      - name: Download image tag artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: image-tag
-          path: .
-
-      - name: Read image tag
-        id: read_tag
-        run: echo "TAG=$(cat image-tag.txt)" >> $GITHUB_OUTPUT
-
+      # 6️⃣ Helm 배포 실행
       - name: Deploy using Helm
         run: |
-          helm upgrade --install chat-v1 ./helm \
-            --namespace chat-ting \
+          helm upgrade --install chat-ting-server ./helm \                            # ✅ 릴리스 이름 확인
+            --namespace chat-ting \                                                   # ✅ 네임스페이스
             --create-namespace \
-            --set backend.image.tag=${{ steps.read_tag.outputs.TAG }}
+            --set backend.image.tag=${{ github.event.workflow_run.head_branch }}     # ✅ Git 태그 이름 그대로 전달
