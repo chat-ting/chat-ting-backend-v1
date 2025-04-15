@@ -20,6 +20,8 @@ spec:
           ports:
             - containerPort: 5432
           env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/data
             - name: POSTGRES_DB
               value: {{ .Values.postgresql.db }}       # ✅ 여기 → chat-ting-server-db
             - name: POSTGRES_USER
@@ -29,6 +31,7 @@ spec:
                 secretKeyRef:
                   name: chat-ting-server-db-secret
                   key: password
+
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: postgres-storage
