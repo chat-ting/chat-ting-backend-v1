@@ -1,13 +1,14 @@
 spring:
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
+    driver-class-name: org.postgresql.Driver # PostgreSQL JDBC ????? ?????.
+    url: jdbc:postgresql://${POSTGRES_DB_HOST}:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}?serverTimezone=UTC
+    platform: postgres # ???? ?????? ???? ?????.
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: redis
+      port: 6379
 logging:
   level:
     org.hibernate.SQL: warn
