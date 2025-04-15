@@ -1,0 +1,22 @@
+postgresql:
+  image: postgres:15
+  db: chat_ting_server
+  user: server_chat_ting
+  password: server_chat_ting   # ❗ 실제로는 이걸 secret에서 base64 인코딩된 값으로 가져와야 함
+
+backend:
+  image:
+    repository: yanoos555/chat-ting-server
+    tag: 0.1.0
+  service:
+    port: 8080
+  config:
+    SPRING_PROFILES_ACTIVE: prod
+    POSTGRES_DB_HOST: chat-ting-server-db
+    POSTGRES_DB_PORT: "5432"
+    POSTGRES_DB_NAME: chat_ting_server
+    POSTGRES_USER: server_chat_ting
+    TOKEN_TTL_MINUTES: 15
+
+  secret:
+    POSTGRES_PASSWORD: server_chat_ting
