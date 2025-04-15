@@ -37,7 +37,8 @@ spec:
               subPath: init.sql
       volumes:
         - name: postgres-storage
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: chat-ting-server-db-pvc
         - name: init-sql
           configMap:
             name: chat-ting-db-init
