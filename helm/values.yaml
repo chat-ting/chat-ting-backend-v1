@@ -7,7 +7,7 @@ postgresql:
 backend:
   image:
     repository: yanoos555/chat-ting-server
-    tag: 0.1.0
+    tag: latest
   service:
     port: 8080
   config:

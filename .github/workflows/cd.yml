@@ -1,0 +1,53 @@
+name: CD - Deploy to EKS
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Docker image"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: latest
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: latest
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Update kubeconfig for EKS
+        run: aws eks update-kubeconfig --region ap-northeast-2 --name chat-ting
+
+      - name: Download image tag artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: image-tag
+          path: .
+
+      - name: Read image tag
+        id: read_tag
+        run: echo "TAG=$(cat image-tag.txt)" >> $GITHUB_OUTPUT
+
+      - name: Deploy using Helm
+        run: |
+          helm upgrade --install chat-v1 ./helm \
+            --namespace chat-ting \
+            --create-namespace \
+            --set backend.image.tag=${{ steps.read_tag.outputs.TAG }}
