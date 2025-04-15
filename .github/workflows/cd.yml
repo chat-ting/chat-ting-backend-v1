@@ -43,7 +43,7 @@ jobs:
       # 6️⃣ Helm 배포 실행
       - name: Deploy using Helm
         run: |
-          helm upgrade --install chat-ting-server ./helm                             # ✅ 릴리스 이름 확인
-            --namespace chat-ting                                                    # ✅ 네임스페이스
-            --create-namespace 
-            --set backend.image.tag=${{ github.event.workflow_run.head_branch }}     # ✅ Git 태그 이름 그대로 전달
+          helm upgrade --install chat-ting-server ./helm \                       
+            --namespace chat-ting \                                              
+            --create-namespace \
+            --set backend.image.tag=${{ github.event.workflow_run.head_branch }} 
