@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-ting-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-ting-server
+  template:
+    metadata:
+      labels:
+        app: chat-ting-server
+    spec:
+      containers:
+        - name: member
+          image: {{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: chat-ting-server-config
+            - secretRef:
+                name: chat-ting-server-secret
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          
