@@ -31,4 +31,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: yanoos555/chat-ting-member:${{ steps.extract_tag.outputs.TAG }}
+          tags: yanoos555/chat-ting-server:${{ steps.extract_tag.outputs.TAG }}
