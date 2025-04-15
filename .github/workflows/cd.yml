@@ -33,7 +33,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Update kubeconfig for EKS
-        run: aws eks update-kubeconfig --region ap-northeast-2 --name /chat-ting-cluster
+        run: aws eks update-kubeconfig --region ap-northeast-2 --name chat-ting-cluster
 
       - name: Download image tag artifact
         uses: actions/download-artifact@v4
