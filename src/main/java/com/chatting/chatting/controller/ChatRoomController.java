@@ -10,6 +10,7 @@ import com.chatting.chatting.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,12 +20,14 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/chat-rooms")
+@Transactional(readOnly = true)
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
     private final RedisAuthService redisAuthService; // token → userInfo 조회
 
     @PostMapping
+    @Transactional
     public ResponseEntity<Map<String,UUID>> createRoom(@RequestHeader("Authorization") String authHeader,
                                            @RequestBody CreateRoomRequest request) {
         // 1. 토큰 파싱
@@ -40,10 +43,7 @@ public class ChatRoomController {
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("roomId", room.getId()));
     }
 
-    private String extractToken(String header) {
-        if (header == null || !header.startsWith("Bearer ")) throw new RuntimeException("토큰 없음");
-        return header.substring(7);
-    }
+
 
     @GetMapping
     public ResponseEntity<List<ChatRoomDto>> getMemberChatRooms(@RequestHeader("Authorization") String authHeader) {
