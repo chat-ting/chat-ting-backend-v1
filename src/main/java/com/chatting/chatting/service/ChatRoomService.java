@@ -8,6 +8,7 @@ import com.chatting.chatting.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -45,5 +46,9 @@ public class ChatRoomService {
                 .userId(userId)
                 .build();
         memberRepository.save(member);
+    }
+
+    public String getChatRooms(Long memberId) {
+        return null;
     }
 }
