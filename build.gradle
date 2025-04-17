@@ -13,6 +13,28 @@ bootJar {
 repositories {
     mavenCentral()
 }
+// QueryDSL에서 생성된 Q클래스들이 저장될 디렉토리를 설정
+// Gradle의 typesafe API인 layout.buildDirectory를 사용 (Gradle 7.6+ 기준 권장 방식)
+def generated = layout.buildDirectory.dir("generated/sources/annotationProcessor/java/main")
+
+// 생성된 Q타입 디렉토리를 소스 디렉토리에 포함시켜야 인텔리제이나 컴파일러가 인식함
+sourceSets {
+    main {
+        java {
+            srcDir generated // Q타입이 들어오는 디렉토리를 명시적으로 포함
+        }
+    }
+}
+
+// Java 컴파일 시, annotation processor가 생성한 소스들을 위 디렉토리에 저장하도록 설정
+// 기존 deprecated된 'annotationProcessorGeneratedSourcesDirectory' 대신 사용
+tasks.withType(JavaCompile).configureEach {
+    it.options.generatedSourceOutputDirectory = generated.get().asFile
+
+    // (선택) 클래스 파일들이 저장될 디렉토리를 명시 (기본값과 같지만 명확히 표현)
+    it.destinationDirectory.set(layout.buildDirectory.dir("classes/java/main"))
+}
+
 
 dependencies {
     // Spring Core
@@ -45,4 +67,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 //actuator
     implementation "org.springframework.boot:spring-boot-starter-actuator"
+
+    // ⭐ Spring boot 3.x이상에서 QueryDsl 패키지를 정의하는 방법
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
+
