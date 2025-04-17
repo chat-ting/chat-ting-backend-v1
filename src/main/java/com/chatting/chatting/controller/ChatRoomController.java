@@ -5,6 +5,7 @@ import com.chatting.chatting.controller.dto.ChatRoomDto;
 import com.chatting.chatting.controller.dto.CreateRoomRequest;
 import com.chatting.chatting.global.entity.ChatRoom;
 import com.chatting.chatting.global.service.RedisAuthService;
+import com.chatting.chatting.global.util.StringUtil;
 import com.chatting.chatting.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class ChatRoomController {
     public ResponseEntity<Map<String,UUID>> createRoom(@RequestHeader("Authorization") String authHeader,
                                            @RequestBody CreateRoomRequest request) {
         // 1. 토큰 파싱
-        String token = extractToken(authHeader);
+        String token = StringUtil.extractTokenFromAuthHeader(authHeader);
 
         // 2. Redis에서 유저 조회
         AuthUserInfo user = redisAuthService.resolve(token)
@@ -47,7 +48,7 @@ public class ChatRoomController {
     @GetMapping
     public ResponseEntity<List<ChatRoomDto>> getMemberChatRooms(@RequestHeader("Authorization") String authHeader) {
         // 1. 토큰 파싱
-        String token = extractToken(authHeader);
+        String token = StringUtil.extractTokenFromAuthHeader(authHeader);
 
         // 2. Redis에서 유저 조회
         AuthUserInfo user = redisAuthService.resolve(token)
