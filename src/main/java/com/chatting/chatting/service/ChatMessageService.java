@@ -4,7 +4,7 @@ import com.chatting.chatting.exception.NotFoundException;
 import com.chatting.chatting.global.entity.ChatMessage;
 import com.chatting.chatting.global.entity.ChatRoom;
 import com.chatting.chatting.repository.ChatMessageRepository;
-import com.chatting.chatting.repository.ChatRoomRepository;
+import com.chatting.chatting.repository.chat_room_repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

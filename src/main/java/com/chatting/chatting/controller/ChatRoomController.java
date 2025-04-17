@@ -1,6 +1,7 @@
 package com.chatting.chatting.controller;
 
 import com.chatting.chatting.controller.dto.AuthUserInfo;
+import com.chatting.chatting.controller.dto.ChatRoomDto;
 import com.chatting.chatting.controller.dto.CreateRoomRequest;
 import com.chatting.chatting.global.entity.ChatRoom;
 import com.chatting.chatting.global.service.RedisAuthService;
@@ -10,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -43,7 +45,7 @@ public class ChatRoomController {
     }
 
     @GetMapping
-    public ResponseEntity<String> getChatRooms(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<ChatRoomDto>> getMemberChatRooms(@RequestHeader("Authorization") String authHeader) {
         // 1. 토큰 파싱
         String token = extractToken(authHeader);
 
@@ -51,7 +53,8 @@ public class ChatRoomController {
         AuthUserInfo user = redisAuthService.resolve(token)
                 .orElseThrow(() -> new RuntimeException("인증 실패"));
 
+
         // 3. 채팅방 목록 조회
-        return ResponseEntity.ok(chatRoomService.getChatRooms(user.getMemberId()));
+        return ResponseEntity.ok(chatRoomService.getChatRoomsByMemberId(user.getMemberId()));
     }
 }

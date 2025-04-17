@@ -1,10 +1,11 @@
 package com.chatting.chatting.service;
 
+import com.chatting.chatting.controller.dto.ChatRoomDto;
 import com.chatting.chatting.exception.NotFoundException;
 import com.chatting.chatting.global.entity.ChatRoom;
 import com.chatting.chatting.global.entity.ChatRoomMember;
 import com.chatting.chatting.repository.ChatRoomMemberRepository;
-import com.chatting.chatting.repository.ChatRoomRepository;
+import com.chatting.chatting.repository.chat_room_repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +49,10 @@ public class ChatRoomService {
         memberRepository.save(member);
     }
 
-    public String getChatRooms(Long memberId) {
-        return null;
+    public List<ChatRoomDto> getChatRoomsByMemberId(Long memberId) {
+        return chatRoomRepository.findChatRoomsByMemberId(memberId)
+                .stream()
+                .map(ChatRoomDto::from)
+                .toList();
     }
 }
