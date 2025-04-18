@@ -33,6 +33,7 @@ public class ChatMessageController {
         ChatMessage saved = chatMessageService.saveMessage(
                 payload.roomId(),
                 user.getMemberId(),
+                user.getUsername(),
                 payload.content()
         );
 

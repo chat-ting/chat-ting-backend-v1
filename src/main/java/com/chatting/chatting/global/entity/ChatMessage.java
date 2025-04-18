@@ -17,12 +17,14 @@ public class ChatMessage {
     @Id
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    private ChatRoom room;
+    @Column(name = "room_id", nullable = false)
+    private UUID roomId;
 
     @Column(name = "sender_id", nullable = false)
     private Long senderId;
+
+    @Column(name = "member_name", nullable = false)
+    private String memberName;
 
     @Column(nullable = false)
     private String content;
