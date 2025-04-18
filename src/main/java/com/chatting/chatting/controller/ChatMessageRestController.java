@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ public class ChatMessageRestController {
 
         // 2. Redis에서 유저 조회
         AuthUserInfo user = redisAuthService.resolve(token)
-                .orElseThrow(() -> new RuntimeException("인증 실패"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,"인증 실패"));
 
         // 3. 채팅방 목록 조회
         return ResponseEntity.ok(chatMessageService.getMessages(roomId, user.getMemberId()));
@@ -51,7 +52,7 @@ public class ChatMessageRestController {
 
         // 2. Redis에서 유저 조회
         AuthUserInfo user = redisAuthService.resolve(token)
-                .orElseThrow(() -> new RuntimeException("인증 실패"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,"인증 실패"));
 
         // 3. 채팅방 목록 조회
         return ResponseEntity.ok(chatMessageService.getLastMessage(roomId, user.getMemberId()));

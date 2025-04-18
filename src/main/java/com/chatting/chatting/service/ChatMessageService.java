@@ -9,7 +9,9 @@ import com.chatting.chatting.repository.chat_message.ChatMessageRepository;
 import com.chatting.chatting.repository.chat_room.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,7 +69,7 @@ public class ChatMessageService {
                 .orElseThrow(() -> new NotFoundException("채팅방 없음"));
 
         chatRoomMemberRepository.findByRoomIdAndUserId(room.getId(), senderId)
-                .orElseThrow(() -> new NotFoundException("채팅방에 없음"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN,"채팅방에 없음"));
 
     }
 
