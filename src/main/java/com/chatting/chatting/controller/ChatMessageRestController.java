@@ -29,9 +29,9 @@ public class ChatMessageRestController {
     private final ChatMessageService chatMessageService;
 
     //기존 채팅 내용 조회
-    @GetMapping
+    @GetMapping("/{roomId}")
     public ResponseEntity<List<ChatMessageDto>> getChatMessages(@RequestHeader("Authorization") String authHeader,
-                                                                @RequestParam("roomId") UUID roomId) {
+                                                                @PathVariable("roomId") UUID roomId) {
         // 1. 토큰 파싱
         String token = StringUtil.extractTokenFromAuthHeader(authHeader);
 
@@ -40,7 +40,21 @@ public class ChatMessageRestController {
                 .orElseThrow(() -> new RuntimeException("인증 실패"));
 
         // 3. 채팅방 목록 조회
-        return ResponseEntity.ok(chatMessageService.getMessages(roomId));
+        return ResponseEntity.ok(chatMessageService.getMessages(roomId, user.getMemberId()));
+    }
+
+    @GetMapping("/{roomId}/last")
+    public ResponseEntity<ChatMessageDto> getLastChatMessage(@RequestHeader("Authorization") String authHeader,
+                                                                @PathVariable("roomId") UUID roomId) {
+        // 1. 토큰 파싱
+        String token = StringUtil.extractTokenFromAuthHeader(authHeader);
+
+        // 2. Redis에서 유저 조회
+        AuthUserInfo user = redisAuthService.resolve(token)
+                .orElseThrow(() -> new RuntimeException("인증 실패"));
+
+        // 3. 채팅방 목록 조회
+        return ResponseEntity.ok(chatMessageService.getLastMessage(roomId, user.getMemberId()));
     }
 
 

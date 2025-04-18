@@ -13,7 +13,7 @@ public class ChatMessageDto {
     Long senderId;
     String senderName;
     String content;
-    String sentAt;
+    long sentAt;
 
 
     public static ChatMessageDto from(ChatMessage mesage) {
@@ -21,7 +21,7 @@ public class ChatMessageDto {
                 .id(mesage.getId().toString())
                 .senderId(mesage.getSenderId())
                 .content(mesage.getContent())
-                .sentAt(mesage.getSentAt().toString())
+                .sentAt(mesage.getSentAt().toInstant().toEpochMilli())
                 .senderName(mesage.getMemberName())
                 .build();
     }
