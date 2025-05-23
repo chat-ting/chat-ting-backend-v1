@@ -20,14 +20,12 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/chat-rooms")
-@Transactional(readOnly = true)
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
     private final RedisAuthService redisAuthService; // token → userInfo 조회
 
     @PostMapping
-    @Transactional
     public ResponseEntity<Map<String,UUID>> createRoom(@RequestHeader("Authorization") String authHeader,
                                            @RequestBody CreateRoomRequest request) {
         // 1. 토큰 파싱

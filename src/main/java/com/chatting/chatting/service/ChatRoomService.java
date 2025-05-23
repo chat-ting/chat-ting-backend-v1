@@ -8,17 +8,20 @@ import com.chatting.chatting.repository.ChatRoomMemberRepository;
 import com.chatting.chatting.repository.chat_room.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository memberRepository;
 
+    @Transactional
     public ChatRoom createRoom(String name, Long creatorId) {
         ChatRoom room = ChatRoom.builder()
                 .name(name)
@@ -34,6 +37,7 @@ public class ChatRoomService {
         return room;
     }
 
+    @Transactional
     public void inviteUser(UUID roomId, Long userId) {
         ChatRoom room = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new NotFoundException("채팅방 없음"));
