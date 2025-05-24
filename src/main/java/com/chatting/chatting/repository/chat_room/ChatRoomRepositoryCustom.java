@@ -1,9 +1,10 @@
 package com.chatting.chatting.repository.chat_room;
 
 import com.chatting.chatting.global.entity.ChatRoom;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
 public interface ChatRoomRepositoryCustom {
-    List<ChatRoom> findChatRoomsByMemberId(long memberId);
+    Flux<ChatRoom> findChatRoomsByMemberId(long memberId);
 }

@@ -2,15 +2,15 @@ package com.chatting.chatting.repository.chat_message;
 
 
 import com.chatting.chatting.global.entity.ChatMessage;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.util.Optional;
 import java.util.UUID;
-import java.util.List;
 
-public interface ChatMessageRepository extends JpaRepository<ChatMessage, UUID>, ChatMessageRepositoryCustom {
+public interface ChatMessageRepository extends ReactiveCrudRepository<ChatMessage, UUID> {
 
-    List<ChatMessage> findByRoomIdOrderByIdAsc(UUID roomId);
+    Flux<ChatMessage> findByRoomIdOrderByIdAsc(UUID roomId);
 
-    Optional<ChatMessage> findTopByRoomIdOrderByIdDesc(UUID roomId);
+    Mono<ChatMessage> findTopByRoomIdOrderByIdDesc(UUID roomId);
 }
