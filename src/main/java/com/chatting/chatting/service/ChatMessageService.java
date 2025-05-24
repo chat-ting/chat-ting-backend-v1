@@ -9,6 +9,7 @@ import com.chatting.chatting.repository.chat_message.ChatMessageRepository;
 import com.chatting.chatting.repository.chat_room.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,6 +28,7 @@ public class ChatMessageService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatMessageRepository messageRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final R2dbcEntityTemplate r2dbcEntityTemplate;
 
 
     public Mono<ChatMessage> saveMessage(UUID roomId, Long senderId, String senderName, String content){
@@ -34,7 +36,7 @@ public class ChatMessageService {
                 .switchIfEmpty(Mono.error(new NotFoundException("채팅방 없음")))
                 .flatMap(room -> {
                     ChatMessage message = ChatMessage.create(room.getId(), senderId, senderName, content);
-                    return messageRepository.save(message);
+                    return r2dbcEntityTemplate.insert(ChatMessage.class).using(message);
                 });
     }
 

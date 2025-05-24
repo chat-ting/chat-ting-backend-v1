@@ -7,6 +7,7 @@ import com.chatting.chatting.global.entity.ChatRoomMember;
 import com.chatting.chatting.repository.ChatRoomMemberRepository;
 import com.chatting.chatting.repository.chat_room.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -24,6 +25,7 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final TransactionalOperator tx;
+    private final R2dbcEntityTemplate r2dbcEntityTemplate;
 
     // @Transactional
     public Mono<ChatRoom> createRoom(String name, Long creatorId) {
@@ -32,7 +34,7 @@ public class ChatRoomService {
         Mono<ChatRoom> logic = chatRoomRepository.save(room)
                 .flatMap(savedRoom -> {
                     ChatRoomMember creator = ChatRoomMember.create(savedRoom.getId(),creatorId);
-                    return chatRoomMemberRepository.save(creator)
+                    return r2dbcEntityTemplate.insert(ChatRoomMember.class).using(creator)
                             .thenReturn(savedRoom);
                 });
         return tx.transactional(logic);
@@ -48,7 +50,7 @@ public class ChatRoomService {
                                     return Mono.error(new IllegalStateException("User already in room"));
                                 }
                                 ChatRoomMember member = ChatRoomMember.create(roomId, userId);
-                                return chatRoomMemberRepository.save(member).then();//return은 왜하지?
+                                return r2dbcEntityTemplate.insert(ChatRoomMember.class).using(member).then();//return은 왜하지?
                             })
                 );
     }
