@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,51 +28,51 @@ public class ChatMessageService {
     private final ChatMessageRepository messageRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
 
-    public ChatMessage saveMessage(UUID roomId, Long senderId, String senderName, String content) {
-        ChatRoom room = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new NotFoundException("채팅방 없음"));
 
-        ChatMessage message = ChatMessage.builder()
-                .roomId(room.getId())
-                .senderId(senderId)
-                .memberName(senderName)
-                .content(content)
-                .build();
-
-        return messageRepository.save(message);
+    public Mono<ChatMessage> saveMessage(UUID roomId, Long senderId, String senderName, String content){
+        return chatRoomRepository.findById(roomId)
+                .switchIfEmpty(Mono.error(new NotFoundException("채팅방 없음")))
+                .flatMap(room -> {
+                    ChatMessage message = ChatMessage.create(room.getId(), senderId, senderName, content);
+                    return messageRepository.save(message);
+                });
     }
 
-    public List<ChatMessageDto> getMessages(UUID roomId, Long senderId) {
-        validateRoomAndSender(roomId, senderId);
-        List<ChatMessageDto> list = messageRepository.findByRoomIdOrderByIdAsc(roomId).stream()
-                .map(mesage -> ChatMessageDto.from(mesage))
-                .toList();
-        return list;
+
+    public Flux<ChatMessageDto> getMessages(UUID roomId, Long senderId){
+        return validateRoomAndSender(roomId, senderId)
+                .thenMany(messageRepository.findByRoomIdOrderByIdAsc(roomId))
+                .map(ChatMessageDto::from);
     }
 
-    public ChatMessageDto getLastMessage(UUID roomId, Long senderId) {
-
-        validateRoomAndSender(roomId, senderId);
-        Optional<ChatMessage> lastMessage = messageRepository.findTopByRoomIdOrderByIdDesc(roomId);
-        if(lastMessage.isEmpty()) {
-            return ChatMessageDto.builder()
-                    .id("-1")
-                    .senderId(0L)
-                    .content("빈 채팅방")
-                    .sentAt(0L)
-                    .senderName("SYSTEM")
-                    .build();
-        }
-        return ChatMessageDto.from(lastMessage.get());
+    public Mono<ChatMessageDto> getLastMessage(UUID roomId, Long senderId) {
+        return validateRoomAndSender(roomId, senderId)
+                .then(messageRepository.findTopByRoomIdOrderByIdDesc(roomId)
+                        .map(ChatMessageDto::from)
+                        .defaultIfEmpty(ChatMessageDto.builder()
+                                .id("-1")
+                                .senderId(0L)
+                                .content("빈 채팅방")
+                                .sentAt(0L)
+                                .senderName("SYSTEM")
+                                .build()));
     }
 
-    private void validateRoomAndSender(UUID roomId, Long senderId) {
-        ChatRoom room = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new NotFoundException("채팅방 없음"));
 
-        chatRoomMemberRepository.findByRoomIdAndUserId(room.getId(), senderId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN,"채팅방에 없음"));
 
+    private Mono<Void> validateRoomAndSender(UUID roomId, Long senderId){
+        return chatRoomRepository.findById(roomId)
+                .switchIfEmpty(Mono.error(new NotFoundException("채팅방 없음")))
+                .flatMap(room ->
+                        chatRoomMemberRepository.findByRoomIdAndUserId(room.getId(), senderId)
+                                .hasElements()
+                                .flatMap(exists -> {
+                                    if(!exists){
+                                        return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN,"채팅방에 없음"));
+                                    }
+                                    return Mono.empty();
+                                })
+                );
     }
 
 
