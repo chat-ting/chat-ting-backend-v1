@@ -2,7 +2,6 @@ package com.chatting.chatting.controller;
 
 import com.chatting.chatting.controller.dto.AuthUserInfo;
 import com.chatting.chatting.controller.dto.ChatMessagePayload;
-import com.chatting.chatting.global.entity.ChatMessage;
 import com.chatting.chatting.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +10,10 @@ import org.springframework.messaging.handler.annotation.*;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -22,25 +23,29 @@ public class ChatMessageController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/send") // 클라이언트가 /chat/send로 보냄
-    public void handleMessage(@Payload ChatMessagePayload payload,
-                              Message<?> message) {
+    public Mono<Void> handleMessage(@Payload ChatMessagePayload payload,
+                                    Message<?> message) {
 
-        Map<String, Object> sessionAttrs = (Map<String,Object>)
+        Map<String, Object> sessionAttrs = (Map<String, Object>)
                 message.getHeaders().get(SimpMessageHeaderAccessor.SESSION_ATTRIBUTES);
         AuthUserInfo user = (AuthUserInfo) sessionAttrs.get("user");
 
         log.info("✉️ {}({})의 메시지: {}", user.getUsername(), user.getMemberId(), payload.content());
-        ChatMessage saved = chatMessageService.saveMessage(
-                payload.roomId(),
-                user.getMemberId(),
-                user.getUsername(),
-                payload.content()
-        );
+        return chatMessageService.saveMessage(
+                        payload.roomId(),
+                        user.getMemberId(),
+                        user.getUsername(),
+                        payload.content()
+                )
+                .doOnNext(savedMessage -> {
+                    // 메시지를 구독 중인 모든 클라이언트에게 전송
+                    messagingTemplate.convertAndSend("/topic/chat/" + payload.roomId(), savedMessage);
+                })
+                .doOnError(error -> {
+                    log.error("메시지 전송 실패: {}", error.getMessage());
+                    // 에러 처리 로직 (예: 클라이언트에게 에러 메시지 전송)
+                })
+                .then(); // Mono<Void> 반환
 
-        // 구독자에게 전송 (예: /topic/chat/방ID)
-        messagingTemplate.convertAndSend(
-                "/topic/chat/" + payload.roomId(),
-                saved
-        );
     }
 }

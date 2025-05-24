@@ -16,6 +16,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
@@ -24,15 +26,14 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/chat-messages")
-@Transactional(readOnly = true)
 public class ChatMessageRestController {
     private final RedisAuthService redisAuthService; // token → userInfo 조회
     private final ChatMessageService chatMessageService;
 
     //기존 채팅 내용 조회
     @GetMapping("/{roomId}")
-    public ResponseEntity<List<ChatMessageDto>> getChatMessages(@RequestHeader("Authorization") String authHeader,
-                                                                @PathVariable("roomId") UUID roomId) {
+    public Flux<ChatMessageDto> getChatMessages(@RequestHeader("Authorization") String authHeader,
+                                                 @PathVariable("roomId") UUID roomId) {
         // 1. 토큰 파싱
         String token = StringUtil.extractTokenFromAuthHeader(authHeader);
 
@@ -41,12 +42,12 @@ public class ChatMessageRestController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,"인증 실패"));
 
         // 3. 채팅방 목록 조회
-        return ResponseEntity.ok(chatMessageService.getMessages(roomId, user.getMemberId()));
+        return chatMessageService.getMessages(roomId, user.getMemberId());
     }
 
     @GetMapping("/{roomId}/last")
-    public ResponseEntity<ChatMessageDto> getLastChatMessage(@RequestHeader("Authorization") String authHeader,
-                                                                @PathVariable("roomId") UUID roomId) {
+    public Mono<ChatMessageDto> getLastChatMessage(@RequestHeader("Authorization") String authHeader,
+                                                   @PathVariable("roomId") UUID roomId) {
         // 1. 토큰 파싱
         String token = StringUtil.extractTokenFromAuthHeader(authHeader);
 
@@ -55,12 +56,6 @@ public class ChatMessageRestController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED,"인증 실패"));
 
         // 3. 채팅방 목록 조회
-        return ResponseEntity.ok(chatMessageService.getLastMessage(roomId, user.getMemberId()));
+        return chatMessageService.getLastMessage(roomId, user.getMemberId());
     }
-
-
-
-
-
-
 }

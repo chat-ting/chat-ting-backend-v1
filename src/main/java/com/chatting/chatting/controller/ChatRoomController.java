@@ -3,17 +3,13 @@ package com.chatting.chatting.controller;
 import com.chatting.chatting.controller.dto.AuthUserInfo;
 import com.chatting.chatting.controller.dto.ChatRoomDto;
 import com.chatting.chatting.controller.dto.CreateRoomRequest;
-import com.chatting.chatting.global.entity.ChatRoom;
 import com.chatting.chatting.global.service.RedisAuthService;
 import com.chatting.chatting.global.util.StringUtil;
 import com.chatting.chatting.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,8 +22,8 @@ public class ChatRoomController {
     private final RedisAuthService redisAuthService; // token → userInfo 조회
 
     @PostMapping
-    public ResponseEntity<Map<String,UUID>> createRoom(@RequestHeader("Authorization") String authHeader,
-                                           @RequestBody CreateRoomRequest request) {
+    public Mono<Map<String,UUID>> createRoom(@RequestHeader("Authorization") String authHeader,
+                                             @RequestBody CreateRoomRequest request) {
         // 1. 토큰 파싱
         String token = StringUtil.extractTokenFromAuthHeader(authHeader);
 
@@ -36,15 +32,16 @@ public class ChatRoomController {
                 .orElseThrow(() -> new RuntimeException("인증 실패"));
 
         // 3. 채팅방 생성
-        ChatRoom room = chatRoomService.createRoom(request.name()==null?"new chat": request.name(), user.getMemberId());
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("roomId", room.getId()));
+        return chatRoomService.createRoom(request.name()==null?"new chat": request.name(), user.getMemberId())
+                .map(room -> Map.of(
+                        "roomId", room.getId()
+                ));
     }
 
 
 
     @GetMapping
-    public ResponseEntity<List<ChatRoomDto>> getMemberChatRooms(@RequestHeader("Authorization") String authHeader) {
+    public Flux<ChatRoomDto> getMemberChatRooms(@RequestHeader("Authorization") String authHeader) {
         // 1. 토큰 파싱
         String token = StringUtil.extractTokenFromAuthHeader(authHeader);
 
@@ -54,6 +51,6 @@ public class ChatRoomController {
 
 
         // 3. 채팅방 목록 조회
-        return ResponseEntity.ok(chatRoomService.getChatRoomsByMemberId(user.getMemberId()));
+        return chatRoomService.getChatRoomsByMemberId(user.getMemberId());
     }
 }
