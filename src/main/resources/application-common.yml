@@ -10,6 +10,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
       group-id: chat-group
+      concurrency: 4  # 👈 동시에 4개 consumer 실행
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     listener:

@@ -20,7 +20,7 @@ public class ChatKafkaConsumer {
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = "chat-message", groupId = "chat-group")
+    @KafkaListener(topics = "chat-message", groupId = "chat-group", concurrency = "4")
     public void listen(String message) {
         try {
             ChatKafkaMessage kafkaMessage = objectMapper.readValue(message, ChatKafkaMessage.class);
