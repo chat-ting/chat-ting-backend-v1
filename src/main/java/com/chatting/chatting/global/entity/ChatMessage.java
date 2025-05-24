@@ -1,44 +1,48 @@
 package com.chatting.chatting.global.entity;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(name = "chat_message")
 public class ChatMessage {
 
     @Id
     private UUID id;
 
-    @Column(name = "room_id", nullable = false)
+    @Column("room_id")
     private UUID roomId;
 
-    @Column(name = "sender_id", nullable = false)
+    @Column("sender_id")
     private Long senderId;
 
-    @Column(name = "member_name", nullable = false)
+    @Column("member_name")
     private String memberName;
 
-    @Column(nullable = false)
+    @Column("content")
     private String content;
 
-    @Column(name = "sent_at", nullable = false)
+    @Column("sent_at")
     private OffsetDateTime sentAt;
 
-    @PrePersist
-    public void prePersist() {
-        if (this.id == null) {
-            this.id = UuidCreator.getTimeOrdered(); // UUIDv7 스타일
-        }
-        if (this.sentAt == null) {
-            this.sentAt = OffsetDateTime.now();
-        }
+
+    public static ChatMessage create(UUID roomId, Long senderId, String memberName, String content) {
+        return ChatMessage.builder()
+                .id(UuidCreator.getTimeOrdered())
+                .roomId(roomId)
+                .senderId(senderId)
+                .memberName(memberName)
+                .content(content)
+                .sentAt(OffsetDateTime.now())
+                .build();
     }
 }

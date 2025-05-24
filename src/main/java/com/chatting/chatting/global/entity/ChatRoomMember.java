@@ -1,39 +1,39 @@
 package com.chatting.chatting.global.entity;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-@Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table("chat_room_member")
 public class ChatRoomMember {
 
     @Id
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    private ChatRoom room;
+    @Column("room_id")
+    private UUID roomId; // ChatRoom 자체가 아닌 roomId FK 값만 보관
 
-    @Column(name = "user_id", nullable = false)
+    @Column("user_id")
     private Long userId;
 
-    @Column(name = "joined_at", nullable = false)
+    @Column("joined_at")
     private OffsetDateTime joinedAt;
 
-    @PrePersist
-    public void prePersist() {
-        if (this.id == null) {
-            this.id = UuidCreator.getTimeOrdered(); // UUIDv7 스타일
-        }
-        if (this.joinedAt == null) {
-            this.joinedAt = OffsetDateTime.now();
-        }
+    public static ChatRoomMember create(UUID roomId, Long userId) {
+        return ChatRoomMember.builder()
+                .id(UuidCreator.getTimeOrdered())
+                .roomId(roomId)
+                .userId(userId)
+                .joinedAt(OffsetDateTime.now())
+                .build();
     }
 }
