@@ -1,16 +1,19 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://${POSTGRES_DB_HOST}:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}?serverTimezone=UTC
+  r2dbc:
+    url: r2dbc:postgresql://${POSTGRES_DB_HOST}:${POSTGRES_DB_PORT}/${POSTGRES_DB_NAME}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
 
-    driver-class-name: org.postgresql.Driver
   data:
     redis:
       host: redis
       port: 6379
+
 logging:
   level:
-    org.hibernate.SQL: info
+    org.springframework.r2dbc.core: debug
+    io.r2dbc.postgresql.QUERY: info
+    io.r2dbc.postgresql.PARAM: trace
+
 auth:
   token-ttl-minutes: ${TOKEN_TTL_MINUTES}

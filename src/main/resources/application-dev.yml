@@ -1,9 +1,8 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/chat_ting
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/chat_ting
     username: postgres
     password: qwer1234
-    driver-class-name: org.postgresql.Driver
   data:
     redis:
       host: localhost
@@ -11,7 +10,9 @@ spring:
 
 logging:
   level:
-    org.hibernate.SQL: debug
-    org.hibernate.type.descriptor.sql.BasicBinder: trace
+    org.springframework.r2dbc.core: debug
+    io.r2dbc.postgresql.QUERY: debug
+    io.r2dbc.postgresql.PARAM: trace
+
 auth:
   token-ttl-minutes: 60
