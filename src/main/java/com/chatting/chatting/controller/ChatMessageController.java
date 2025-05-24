@@ -11,6 +11,7 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.Map;
 
@@ -37,13 +38,13 @@ public class ChatMessageController {
                         user.getUsername(),
                         payload.content()
                 )
-                .doOnNext(savedMessage -> {
-                    // 메시지를 구독 중인 모든 클라이언트에게 전송
-                    messagingTemplate.convertAndSend("/topic/chat/" + payload.roomId(), savedMessage);
-                })
+                .flatMap(savedMessage ->
+                        Mono.fromRunnable(() ->
+                                messagingTemplate.convertAndSend("/topic/chat/" + payload.roomId(), savedMessage)
+                        ).subscribeOn(Schedulers.boundedElastic())
+                )
                 .doOnError(error -> {
                     log.error("메시지 전송 실패: {}", error.getMessage());
-                    // 에러 처리 로직 (예: 클라이언트에게 에러 메시지 전송)
                 })
                 .then(); // Mono<Void> 반환
 

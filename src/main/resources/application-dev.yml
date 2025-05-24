@@ -3,6 +3,9 @@ spring:
     url: r2dbc:postgresql://localhost:5432/chat_ting
     username: postgres
     password: qwer1234
+    pool:
+      enabled: true
+      max-size: 100  # ← 최소 100 이상으로 설정 권장
   data:
     redis:
       host: localhost
